@@ -1,2 +1,2 @@
 # foerderplanung
-Ein kleines Tool nur für mich für groosen Impact.
+Ein kleines Tool nur für mich für grossen Impact.
