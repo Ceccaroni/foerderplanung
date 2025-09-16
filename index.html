@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';
+                 img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self';
+                 frame-ancestors 'none'">
+  <title>Förderplanung – Zielbaum (lokal)</title>
+  <link rel="stylesheet" href="./styles/tokens.css">
+  <link rel="stylesheet" href="./styles/app.css">
+</head>
+<body>
+  <header class="app-header" role="banner">
+    <img class="brand" src="./assets/logo-huttwil.svg" alt="Schule Huttwil" width="160" height="40">
+    <h1 class="app-title">Förderplanung</h1>
+  </header>
+
+  <main class="container" role="main">
+    <section aria-labelledby="zielbaum-h">
+      <h2 id="zielbaum-h">Zielbaum</h2>
+
+      <!-- ARIA-Tree: Ziele → Teilziele → (Platzhalter für Beobachtungen) -->
+      <div id="ziel-tree"
+           role="tree"
+           aria-label="Zielbaum"
+           aria-describedby="tree-hinweis"
+           tabindex="0">
+
+        <!-- Beispiel-Knoten Ebene 1 -->
+        <div role="treeitem" aria-expanded="true" aria-level="1" aria-setsize="2" aria-posinset="1" tabindex="0">
+          <button class="twisty" aria-hidden="true" tabindex="-1" title="Auf-/Zuklappen">▾</button>
+          <span class="tree-text">Mathematik — Terme ausmultiplizieren (aktiv)</span>
+        </div>
+        <div role="group">
+          <div role="treeitem" aria-expanded="false" aria-level="2" aria-setsize="2" aria-posinset="1" tabindex="-1">
+            <button class="twisty" aria-hidden="true" tabindex="-1" title="Auf-/Zuklappen">▸</button>
+            <span class="tree-text">Teilziel: Binomische Formen erkennen</span>
+          </div>
+          <div role="group" hidden>
+            <div role="treeitem" aria-level="3" aria-setsize="2" aria-posinset="1" tabindex="-1">
+              <span class="tree-text">Indikator: 3 Beispiele korrekt in Serie</span>
+            </div>
+            <div role="treeitem" aria-level="3" aria-setsize="2" aria-posinset="2" tabindex="-1">
+              <span class="tree-text">Indikator: Fehlerquote &lt; 10 %</span>
+            </div>
+          </div>
+
+          <div role="treeitem" aria-level="2" aria-setsize="2" aria-posinset="2" tabindex="-1">
+            <span class="tree-text">Indikator: Fachbegriffe korrekt verwenden</span>
+          </div>
+        </div>
+
+        <!-- Beispiel-Knoten Ebene 1 -->
+        <div role="treeitem" aria-expanded="false" aria-level="1" aria-setsize="2" aria-posinset="2" tabindex="-1">
+          <button class="twisty" aria-hidden="true" tabindex="-1" title="Auf-/Zuklappen">▸</button>
+          <span class="tree-text">Deutsch — Wortstamm erkennen (entwurf)</span>
+        </div>
+        <div role="group" hidden>
+          <div role="treeitem" aria-level="2" aria-setsize="1" aria-posinset="1" tabindex="-1">
+            <span class="tree-text">Indikator: 10/12 korrekt im Diktat</span>
+          </div>
+        </div>
+      </div>
+
+      <p id="tree-hinweis" class="sr-only">
+        Pfeiltasten bewegen den Fokus. Enter/Leertaste oder Rechts klappt auf, Links klappt zu. Home/Ende springen an den Anfang/Schluss.
+      </p>
+    </section>
+  </main>
+
+  <script src="./scripts/tree.js"></script>
+</body>
+</html>
