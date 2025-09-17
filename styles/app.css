@@ -92,3 +92,48 @@ textarea.field { width: 100%; }
 @media (prefers-reduced-motion: reduce){
   * { animation: none; transition: none; scroll-behavior: auto; }
 }
+
+/* ===== DIFF: Header-Extras (Avatare + Tabs) ===== */
+.fp-header-extras{
+  display: flex; flex-direction: column; align-items: center;
+  gap: var(--space-2); padding: 0 var(--space-4) var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.fp-avatars{ display: flex; gap: var(--space-3); }
+.fp-avatar{
+  --fp-size: 44px;
+  width: var(--fp-size); height: var(--fp-size);
+  border-radius: 10px; padding: 0; border: 0; background: transparent; cursor: pointer;
+  overflow: hidden; display: inline-flex; align-items: center; justify-content: center;
+}
+.fp-avatar img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+.fp-shadow-top{ box-shadow: 0 -4px 8px rgba(0,0,0,.12); }   /* Alternative: .fp-shadow-bottom */
+
+/* Tabs */
+.fp-tabs{ display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.fp-tab{
+  display: inline-block; text-decoration: none; color: inherit;
+  padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border);
+  background: #fff; box-shadow: var(--shadow-1);
+}
+.fp-tab[aria-current="page"]{
+  background: var(--accent); color: var(--accent-ink); border-color: transparent;
+}
+
+/* Logo oben im Header ausblenden – fixes Logo unten übernimmt */
+.app-header .brand{ display: none !important; }
+
+/* Fixes Logo unten rechts, immer sichtbar */
+.brand-fixed{
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 10;
+}
+.brand-fixed img{
+  height: 40px; width: auto; display: block;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.15)); opacity: .98;
+}
+@media (max-width: 480px){ .brand-fixed img{ height: 28px; } }
+@media print{ .brand-fixed{ display: none; } }
