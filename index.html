@@ -97,6 +97,22 @@
       </div>
       <img id="foto-preview" alt="Schülerfoto" hidden>
     </section>
+
+    <!-- Export Förderplanung -->
+    <section class="container" aria-labelledby="export-h">
+      <h2 id="export-h">Export Förderplanung</h2>
+      <div class="form-row">
+        <label>Student-ID
+          <input id="exp-student" class="field" placeholder="z. B. abc-123" list="exp-students">
+        </label>
+        <button id="exp-load-students" class="btn">Liste laden</button>
+        <button id="exp-txt" class="btn">Als TXT</button>
+        <button id="exp-rtf" class="btn primary">Als RTF</button>
+      </div>
+      <datalist id="exp-students"></datalist>
+      <p class="muted" id="exp-msg"></p>
+      <div id="exp-links" class="row-actions"></div>
+    </section>
   </main>
 
   <script src="./scripts/tree.js"></script>
@@ -106,5 +122,6 @@
 
   <!-- UI-Andockpunkte (laden db.js/vault.js) -->
   <script type="module" src="./scripts/ui-docs.js"></script>
+  <script type="module" src="./scripts/export.js"></script>
 </body>
 </html>
