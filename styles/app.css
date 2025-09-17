@@ -129,30 +129,34 @@ textarea.field{ width: 100%; }
 .fp-avatar img{ filter: grayscale(100%); opacity: .55; transition: opacity .15s ease, filter .15s ease; }
 .fp-avatar.is-active img{ filter: none; opacity: 1; }
 
-/* Register (Tabs) – kompakt, bündig, eleganter Schatten) */
+/* ===== Tabs: bündige Grundlinie, robust gegen Subpixel-Gaps ===== */
 .fp-tabs{
-  display: grid;
-  grid-template-columns: repeat(4, minmax(var(--tab-min), 1fr));
-  gap: 6px;
+  display: flex; flex-wrap: wrap; gap: 6px;
   align-self: stretch;
-  border-bottom: var(--baseline);                 /* Grundlinie */
   padding: 0 var(--space-2);
+  position: relative;
+  border-bottom: 0;                         /* echte Border weg – Linie kommt via ::after */
+}
+.fp-tabs::after{
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+  height: 1px; background: var(--border); pointer-events: none; /* durchgehende Grundlinie */
 }
 
 .fp-tab{
-  display: inline-block; text-decoration: none; color: inherit; text-align: center;
-  height: var(--tabs-height);
-  line-height: calc(var(--tabs-height) - 2px);
-  background: #fff;
+  flex: 1 1 var(--tab-min);
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; color: inherit; text-align: center;
 
+  height: var(--tabs-height);
   border: 1px solid var(--border);
-  border-bottom: none;                            /* unten offen = Reiter */
+  border-bottom: none;                        /* unten offen = liegt auf Grundlinie */
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
 
-  box-shadow: 0 1px 2px rgba(0,0,0,.06);          /* zarter Schatten */
-  margin-bottom: -1px;                            /* bündig auf Grundlinie */
-  position: relative; top: 1px;                   /* Subpixel-Korrektur (Safari) */
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);      /* zarter Schatten */
+  margin-bottom: 0;                           /* KEIN -1px */
+  position: relative;                         /* KEIN top-Offset */
 }
 
 .fp-tab[aria-current="page"]{
