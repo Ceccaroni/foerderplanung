@@ -4,14 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <!-- CSP: WASM für sql.js erlaubt, sonst alles strikt lokal -->
+  <!-- CSP: WASM für sql.js erlaubt, „frame-ancestors“ entfernt (im <meta> wirkungslos) -->
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline';
-                 img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self';
-                 frame-ancestors 'none'">
+                 img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
   <title>Förderplanung – Zielbaum (lokal)</title>
-<link rel="stylesheet" href="./styles/tokens.css?v=20250917a">
-<link rel="stylesheet" href="./styles/app.css?v=20250917d">
+  <link rel="stylesheet" href="./styles/tokens.css?v=20250917a">
+  <link rel="stylesheet" href="./styles/app.css?v=20250917e">
 </head>
 <body>
   <header class="app-header" role="banner">
