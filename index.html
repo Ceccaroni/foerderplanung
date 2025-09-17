@@ -6,10 +6,12 @@
   <meta name="referrer" content="no-referrer">
   <!-- CSP: WASM für sql.js erlaubt, sonst alles strikt lokal -->
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'">
+        content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline';
+                 img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self';
+                 frame-ancestors 'none'">
   <title>Förderplanung – Zielbaum (lokal)</title>
-  <link rel="stylesheet" href="./styles/tokens.css">
-  <link rel="stylesheet" href="./styles/app.css">
+  <link rel="stylesheet" href="./styles/tokens.css?v=20250917a">
+  <link rel="stylesheet" href="./styles/app.css?v=20250917a">
 </head>
 <body>
   <header class="app-header" role="banner">
@@ -17,10 +19,9 @@
     <h1 class="app-title">Förderplanung</h1>
   </header>
 
-  <!-- Avatar-Leiste + Tabs (minimaler DIFF, keine bestehenden Strukturen angetastet) -->
+  <!-- Avatar-Leiste + Tabs -->
   <div class="fp-header-extras">
     <div class="fp-avatars" aria-label="Schnellzugriff">
-      <!-- Platzhalter-Avatare als Data-URI (keine Assets nötig) -->
       <button class="fp-avatar fp-shadow-top" title="Stammdaten" data-goto="#stammdaten-h">
         <img alt="Stammdaten" src="data:image/svg+xml;utf8,
           <svg xmlns='http://www.w3.org/2000/svg' width='88' height='88'>
@@ -53,7 +54,6 @@
   </div>
 
   <main class="container" role="main">
-
     <!-- Stammdaten -->
     <section aria-labelledby="stammdaten-h">
       <h2 id="stammdaten-h">Stammdaten</h2>
@@ -158,11 +158,7 @@
     <section aria-labelledby="zielbaum-h">
       <h2 id="zielbaum-h">Zielbaum</h2>
 
-      <div id="ziel-tree"
-           role="tree"
-           aria-label="Zielbaum"
-           aria-describedby="tree-hinweis"
-           tabindex="0">
+      <div id="ziel-tree" role="tree" aria-label="Zielbaum" aria-describedby="tree-hinweis" tabindex="0">
 
         <div role="treeitem" aria-expanded="true" aria-level="1" aria-setsize="2" aria-posinset="1" tabindex="0">
           <button class="twisty" aria-hidden="true" tabindex="-1" title="Auf-/Zuklappen">▾</button>
@@ -249,21 +245,20 @@
     </section>
   </main>
 
-  <!-- Fixes Logo unten rechts, immer sichtbar -->
+  <!-- fixes Logo unten rechts -->
   <div class="brand-fixed" aria-hidden="true">
     <img src="./assets/logo-huttwil.svg" alt="" role="presentation">
   </div>
 
-  <script src="./scripts/tree.js"></script>
+  <script src="./scripts/tree.js?v=20250917a"></script>
 
-  <!-- sql.js UMD: stellt window.initSqlJs bereit (wichtig) -->
-  <script src="./lib/sqljs/sql-wasm.js"></script>
+  <!-- sql.js UMD -->
+  <script src="./lib/sqljs/sql-wasm.js?v=1.8.0"></script>
 
   <!-- UI-Module -->
-  <script type="module" src="./scripts/ui-students.js"></script>
-  <script type="module" src="./scripts/ui-docs.js"></script>
-  <script type="module" src="./scripts/export.js"></script>
-  <!-- Tabs/Avatare (extern wegen CSP) -->
-  <script type="module" src="./scripts/header-extras.js"></script>
+  <script type="module" src="./scripts/ui-students.js?v=20250917a"></script>
+  <script type="module" src="./scripts/ui-docs.js?v=20250917a"></script>
+  <script type="module" src="./scripts/export.js?v=20250917a"></script>
+  <script type="module" src="./scripts/header-extras.js?v=20250917a"></script>
 </body>
 </html>
