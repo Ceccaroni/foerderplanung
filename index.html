@@ -7,34 +7,14 @@
   <!-- CSP: WASM für sql.js erlaubt, sonst alles strikt lokal -->
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'">
-  <title>Förderplanung – lokal</title>
+  <title>Förderplanung – Zielbaum (lokal)</title>
   <link rel="stylesheet" href="./styles/tokens.css">
   <link rel="stylesheet" href="./styles/app.css">
 </head>
 <body>
-
-  <!-- Header: Avatare + Tabs (Logo ist fix unten rechts, siehe .brand-fixed) -->
   <header class="app-header" role="banner">
-    <div class="header-row">
-      <div class="avatars" aria-label="Schnellzugriff">
-        <button class="avatar avatar--shadow-top" title="Stammdaten" data-goto="#stammdaten-h">
-          <img src="./assets/avatar-1.png" alt="Stammdaten">
-        </button>
-        <button class="avatar avatar--shadow-top" title="Dokumente" data-goto="#docs-h">
-          <img src="./assets/avatar-2.png" alt="Dokumente">
-        </button>
-        <button class="avatar avatar--shadow-top" title="Förderplanung" data-goto="#zielbaum-h">
-          <img src="./assets/avatar-3.png" alt="Förderplanung">
-        </button>
-      </div>
-
-      <nav class="tabs" role="navigation" aria-label="Bereiche">
-        <a class="tab" href="#stammdaten-h" aria-current="page">Stammdaten</a>
-        <a class="tab" href="#docs-h">Dokumente</a>
-        <a class="tab" href="#foto-h">Foto</a>
-        <a class="tab" href="#zielbaum-h">Förderplanung</a>
-      </nav>
-    </div>
+    <img class="brand" src="./assets/logo-huttwil.svg" alt="Schule Huttwil">
+    <h1 class="app-title">Förderplanung</h1>
   </header>
 
   <main class="container" role="main">
@@ -234,43 +214,14 @@
     </section>
   </main>
 
-  <!-- Fixes Logo unten rechts, immer sichtbar -->
-  <div class="brand-fixed" aria-hidden="true">
-    <img src="./assets/logo-huttwil.svg" alt="" role="presentation">
-  </div>
-
   <script src="./scripts/tree.js"></script>
 
-  <!-- sql.js UMD für die DB -->
+  <!-- sql.js UMD: stellt window.initSqlJs bereit (wichtig) -->
   <script src="./lib/sqljs/sql-wasm.js"></script>
 
   <!-- UI-Module -->
   <script type="module" src="./scripts/ui-students.js"></script>
   <script type="module" src="./scripts/ui-docs.js"></script>
   <script type="module" src="./scripts/export.js"></script>
-
-  <script>
-    // Tabs & Avatar-Scroll, minimal und ohne Framework
-    (function(){
-      const tabs = document.querySelectorAll('.tabs .tab');
-      tabs.forEach(a => a.addEventListener('click', e => {
-        const id = a.getAttribute('href');
-        const el = document.querySelector(id);
-        if (el) {
-          e.preventDefault();
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          tabs.forEach(t => t.removeAttribute('aria-current'));
-          a.setAttribute('aria-current','page');
-        }
-      }));
-      document.querySelectorAll('.avatar[data-goto]').forEach(btn=>{
-        btn.addEventListener('click', () => {
-          const id = btn.getAttribute('data-goto');
-          const el = document.querySelector(id);
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-      });
-    })();
-  </script>
 </body>
 </html>
