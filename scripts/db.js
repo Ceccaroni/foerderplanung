@@ -1,4 +1,4 @@
-// /scripts/db.js
+// /scripts/db.js  (Version 2025-09-17-01)
 // SQLite via sql.js (WASM). Ganze DB als verschlüsselter Blob in IndexedDB.
 // UI bleibt unberührt; Aufruf später aus App oder Konsole.
 import { deriveKey, encryptBytes, decryptBytes, randomBytes } from './crypto.js';
@@ -10,12 +10,16 @@ let key = null;    // AES-GCM CryptoKey
 let salt = null;   // PBKDF2 salt (Uint8Array)
 
 const ID_SALT = 'kdf-salt';
-const ID_DB   = 'db-core';   // wir starten mit einer Core-DB; Vault kommt später separat
+const ID_DB   = 'db-core';
+
+// Cachebust für Module (Pages-Caching umgehen)
+const SQL_WASM_URL = '../lib/sqljs/sql-wasm.js?v=20250917a';
 
 export async function loadSqlJs() {
   if (SQL) return SQL;
+
   // sql-wasm.js dynamisch laden; verschiedene Exportvarianten abfangen
-  const mod = await import('../lib/sqljs/sql-wasm.js');
+  const mod = await import(SQL_WASM_URL);
 
   const init =
     (typeof mod === 'function' && mod) ||
@@ -191,7 +195,7 @@ function bootstrapSchema(db){
   `);
 }
 
-// Beispiel-APIs (ohne UI), damit wir später direkt andocken können
+// Beispiel-APIs (ohne UI)
 export function addStudent({id = crypto.randomUUID(), vorname, name, geburtstag = null, adresse = null, bemerkung = null}){
   const now = Date.now();
   const stmt = db.prepare('INSERT INTO student (id,vorname,name,geburtstag,adresse,bemerkung,created_at) VALUES (?,?,?,?,?,?,?)');
