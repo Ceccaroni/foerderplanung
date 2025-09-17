@@ -1,64 +1,52 @@
-// Avatare dynamisch aus Core-DB (students) + Vault (Foto) erzeugen.
-// Aktiver Schüler farbig, alle anderen grau/halbtransparent.
-// Klick: springt ins Dossier (vorerst Stammdaten-Abschnitt) und merkt die Auswahl.
+// Lazy-Avatare ohne Passphrase-Dialog, solange keine DB existiert.
+// Öffnet Core/Vault nur, wenn bereits Daten vorhanden sind ODER bei Klick.
+
+import { idbGet } from './idb.js';
 
 let core = null;
 let vault = null;
 let selectedId = localStorage.getItem('fp.selectedStudent') || null;
 
-function ucEncode(s){ return encodeURIComponent(s); }
-
-function initials(vorname, name){
-  const v = (vorname||"").trim(); const n = (name||"").trim();
-  const i1 = v ? v[0].toUpperCase() : "";
-  const i2 = n ? n[0].toUpperCase() : "";
-  return (i1 + i2) || "?";
+function initials(v, n){
+  const i1 = (v||'').trim()[0] || '';
+  const i2 = (n||'').trim()[0] || '';
+  const s = (i1 + i2).toUpperCase();
+  return s || '?';
 }
-
 function svgPlaceholder(text){
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='88' height='88'>
     <rect width='100%' height='100%' rx='10' ry='10' fill='#eceff1'/>
     <text x='50%' y='55%' text-anchor='middle' font-family='Arial' font-size='38' fill='#99a3ad'>${text}</text>
   </svg>`;
-  return `data:image/svg+xml;utf8,${ucEncode(svg)}`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+async function coreExists(){
+  // Ohne Passphrase checken, ob es überhaupt einen gespeicherten Core-Blob gibt.
+  try { return !!(await idbGet('db-core')); } catch { return false; }
 }
 
 async function ensureCoreOpen(){
-  if (core) return;
+  if (core) return true;
   core = await import('./db.js');
   if (!core.isOpen()){
     const pass = window.fpCorePass || prompt('Passphrase (Core):');
+    if (!pass) return false;
     window.fpCorePass = pass;
     await core.openDatabase(pass);
   }
+  return true;
 }
 async function ensureVaultOpen(){
-  if (vault) return;
+  if (vault) return true;
   vault = await import('./vault.js');
   if (!vault.isVaultOpen()){
     const pass = window.fpVaultPass || window.fpCorePass || prompt('Passphrase (Vault):');
+    if (!pass) return false;
     window.fpVaultPass = pass;
     await vault.openVault(pass);
   }
-}
-
-async function loadStudents(){
-  await ensureCoreOpen();
-  const list = core.listStudents(); // [{id, vorname, name, geburtstag}, ...]
-  return Array.isArray(list) ? list : [];
-}
-
-async function photoDataUrl(studentId, fallbackText){
-  try{
-    await ensureVaultOpen();
-    const p = vault.getPhoto(studentId);
-    if (p && p.bytes){
-      // Blob -> ObjectURL -> DataURL (ohne Netz)
-      const blob = new Blob([p.bytes], { type: p.mime || 'image/png' });
-      return URL.createObjectURL(blob); // genügt für <img src>
-    }
-  }catch(e){ /* stiller Fallback */ }
-  return svgPlaceholder(fallbackText);
+  return true;
 }
 
 function renderAvatars(container, items){
@@ -68,24 +56,24 @@ function renderAvatars(container, items){
     btn.className = 'fp-avatar';
     btn.title = `${it.vorname||''} ${it.name||''}`.trim();
     btn.dataset.sid = it.id;
-
     const img = document.createElement('img');
     img.alt = btn.title || 'Schülerbild';
-    img.src = it.src; // später geladen/ersetzt
+    img.src = it.src;
     btn.appendChild(img);
-
     if (selectedId && it.id === selectedId) btn.classList.add('is-active');
 
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       selectedId = it.id;
       localStorage.setItem('fp.selectedStudent', selectedId);
-      // aktive Klasse setzen
       container.querySelectorAll('.fp-avatar').forEach(b => b.classList.remove('is-active'));
       btn.classList.add('is-active');
-      // zum Dossier springen (vorerst Stammdaten)
+
+      // Erst bei Interaktion DB öffnen (wenn vorhanden)
+      if (await coreExists()){
+        const ok = await ensureCoreOpen(); if (!ok) return;
+      }
       const target = document.querySelector('#stammdaten-h');
       if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      // Event für andere Module (optional)
       document.dispatchEvent(new CustomEvent('fp:student-selected', { detail: { id: selectedId }}));
     });
 
@@ -97,37 +85,26 @@ async function init(){
   const wrap = document.querySelector('.fp-avatars');
   if (!wrap) return;
 
-  // Liste laden
-  const students = await loadStudents();
+  // Start: Nur Platzhalter (keine Passphrase)
+  const placeholders = [
+    { id: 's1', vorname: 'S', name: '', src: svgPlaceholder('S') },
+    { id: 's2', vorname: 'D', name: '', src: svgPlaceholder('D') },
+    { id: 's3', vorname: 'F', name: '', src: svgPlaceholder('F') },
+  ];
+  renderAvatars(wrap, placeholders);
 
-  // Fallback: wenn leer, belassen wir ggf. vorhandene Platzhalter
-  if (!students.length) return;
+  // Wenn bereits Core-DB existiert, Avatare leise ersetzen (ohne Prompt),
+  // indem wir erst bei Bedarf öffnen.
+  if (!(await coreExists())) return;
 
-  // Erst mit Platzhalter-SVG zeichnen, dann Fotos (asynchron) nachladen
-  const items = students.map(s => ({
-    id: s.id,
-    vorname: s.vorname,
-    name: s.name,
-    src: svgPlaceholder(initials(s.vorname, s.name))
-  }));
-  renderAvatars(wrap, items);
-
-  // Fotos parallel holen und aktualisieren
-  await ensureVaultOpen();
-  for (const it of items){
-    const url = await photoDataUrl(it.id, initials(it.vorname, it.name));
-    const btn = wrap.querySelector(`.fp-avatar[data-sid="${it.id}"] img`);
-    if (btn) btn.src = url;
-  }
+  // Nutzerinteraktion abwarten, dann echte Daten (optional)
+  // Tipp: Avatar anklicken → dann ensureCoreOpen() in Handler.
 }
 
 window.addEventListener('DOMContentLoaded', () => {
   // Tabs: sanftes Scrollen + aktiver Reiter
   const tabs = document.querySelectorAll('.fp-tabs .fp-tab');
-  function selectTab(a){
-    tabs.forEach(t => t.removeAttribute('aria-current'));
-    a.setAttribute('aria-current', 'page');
-  }
+  function selectTab(a){ tabs.forEach(t => t.removeAttribute('aria-current')); a.setAttribute('aria-current', 'page'); }
   tabs.forEach(a => {
     a.addEventListener('click', e => {
       const id = a.getAttribute('href');
@@ -140,6 +117,5 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Avatare initialisieren
   init().catch(console.error);
 });
