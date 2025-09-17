@@ -8,8 +8,6 @@
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'">
   <title>Förderplanung – Zielbaum (lokal)</title>
-  <link rel="icon" href="./assets/favicon.ico">
-  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
   <link rel="stylesheet" href="./styles/tokens.css">
   <link rel="stylesheet" href="./styles/app.css">
 </head>
@@ -20,120 +18,17 @@
   </header>
 
   <main class="container" role="main">
-
-    <!-- Schüler:innen-Verwaltung -->
-    <section class="container" aria-labelledby="stud-h">
-      <h2 id="stud-h">Schüler:innen</h2>
-
-      <!-- Auswahl / Neu anlegen -->
-      <div class="form-row">
-        <label>Schüler:in wählen
-          <select id="std-select" class="field">
-            <option value="">– bitte laden –</option>
-          </select>
-        </label>
-        <button id="std-reload" class="btn">Liste laden</button>
-        <button id="std-new" class="btn primary">Neu anlegen</button>
-        <span id="std-id" class="muted" aria-live="polite"></span>
-      </div>
-
-      <!-- Stammdaten -->
-      <div class="grid">
-        <label>Vorname
-          <input id="std-vorname" class="field">
-        </label>
-        <label>Name
-          <input id="std-name" class="field">
-        </label>
-        <label>Geburtstag
-          <input id="std-geb" class="field" type="date">
-        </label>
-        <label>Adresse
-          <input id="std-addr" class="field">
-        </label>
-        <label class="grid-span">Bemerkung
-          <input id="std-note" class="field">
-        </label>
-      </div>
-      <div class="form-row">
-        <button id="std-save" class="btn primary">Stammdaten speichern</button>
-      </div>
-
-      <!-- Status-Flags -->
-      <h3>Status</h3>
-      <div class="form-row">
-        <label><input type="checkbox" id="flag-rilz"> rILZ</label>
-        <label><input type="checkbox" id="flag-eu"> eU</label>
-        <label><input type="checkbox" id="flag-bvsa"> bVSA</label>
-      </div>
-
-      <!-- rILZ nach Fach -->
-      <h3>rILZ nach Fach</h3>
-      <div class="form-row">
-        <label>Fach
-          <select id="rilz-fach" class="field">
-            <option>D</option><option>M</option><option>E</option><option>F</option>
-            <option>N</option><option>TT</option><option>BG</option><option>MU</option><option>SP</option>
-          </select>
-        </label>
-        <label>Details
-          <input id="rilz-details" class="field" placeholder="Konkretisierung">
-        </label>
-        <button id="rilz-add" class="btn">Hinzufügen</button>
-      </div>
-      <ul id="rilz-list" class="list"></ul>
-
-      <!-- Kontakte -->
-      <h3>Eltern / Kontakte</h3>
-      <div class="grid">
-        <label>Rolle
-          <input id="kon-rolle" class="field" placeholder="Mutter/Vater/Vormund">
-        </label>
-        <label>Name
-          <input id="kon-name" class="field">
-        </label>
-        <label>Telefon
-          <input id="kon-tel" class="field">
-        </label>
-        <label>E-Mail
-          <input id="kon-mail" class="field" type="email">
-        </label>
-        <label class="grid-span">Adresse
-          <input id="kon-addr" class="field">
-        </label>
-      </div>
-      <div class="form-row">
-        <button id="kon-add" class="btn">Kontakt hinzufügen</button>
-      </div>
-      <ul id="kon-list" class="list"></ul>
-
-      <!-- Historie -->
-      <h3>Schulhistorie / Massnahmen</h3>
-      <div class="grid">
-        <label>Titel
-          <input id="his-titel" class="field" placeholder="Logopädie / Psychomotorik …">
-        </label>
-        <label>von
-          <input id="his-von" class="field" type="date">
-        </label>
-        <label>bis
-          <input id="his-bis" class="field" type="date">
-        </label>
-        <label class="grid-span">Beschreibung
-          <input id="his-desc" class="field">
-        </label>
-      </div>
-      <div class="form-row">
-        <button id="his-add" class="btn">Eintrag hinzufügen</button>
-      </div>
-      <ul id="his-list" class="list"></ul>
-    </section>
-
-    <!-- Zielbaum -->
     <section aria-labelledby="zielbaum-h">
       <h2 id="zielbaum-h">Zielbaum</h2>
 
-      <div id="ziel-tree" role="tree" aria-label="Zielbaum" aria-describedby="tree-hinweis" tabindex="0">
+      <!-- ARIA-Tree: Ziele → Teilziele → (Platzhalter für Beobachtungen) -->
+      <div id="ziel-tree"
+           role="tree"
+           aria-label="Zielbaum"
+           aria-describedby="tree-hinweis"
+           tabindex="0">
+
+        <!-- Beispiel-Knoten Ebene 1 -->
         <div role="treeitem" aria-expanded="true" aria-level="1" aria-setsize="2" aria-posinset="1" tabindex="0">
           <button class="twisty" aria-hidden="true" tabindex="-1" title="Auf-/Zuklappen">▾</button>
           <span class="tree-text">Mathematik — Terme ausmultiplizieren (aktiv)</span>
@@ -151,11 +46,13 @@
               <span class="tree-text">Indikator: Fehlerquote &lt; 10 %</span>
             </div>
           </div>
+
           <div role="treeitem" aria-level="2" aria-setsize="2" aria-posinset="2" tabindex="-1">
             <span class="tree-text">Indikator: Fachbegriffe korrekt verwenden</span>
           </div>
         </div>
 
+        <!-- Beispiel-Knoten Ebene 1 -->
         <div role="treeitem" aria-expanded="false" aria-level="1" aria-setsize="2" aria-posinset="2" tabindex="-1">
           <button class="twisty" aria-hidden="true" tabindex="-1" title="Auf-/Zuklappen">▸</button>
           <span class="tree-text">Deutsch — Wortstamm erkennen (entwurf)</span>
@@ -170,36 +67,6 @@
       <p id="tree-hinweis" class="sr-only">
         Pfeiltasten bewegen den Fokus. Enter/Leertaste oder Rechts klappt auf, Links klappt zu. Home/Ende springen an den Anfang/Schluss.
       </p>
-    </section>
-
-    <!-- Export Förderplanung -->
-    <section class="container" aria-labelledby="export-h">
-      <h2 id="export-h">Export Förderplanung</h2>
-
-      <div class="form-row">
-        <label>Student-ID
-          <input id="exp-student" class="field" placeholder="student-uuid">
-        </label>
-        <button id="exp-load-plans" class="btn">Pläne laden</button>
-        <label>Plan wählen
-          <select id="exp-plan-select" class="field">
-            <option value="">– bitte wählen –</option>
-          </select>
-        </label>
-      </div>
-
-      <div class="form-row">
-        <label>Plan-ID
-          <input id="exp-plan" class="field" placeholder="plan-uuid">
-        </label>
-        <label>Beobachtungen pro Ziel
-          <input id="exp-n" class="field" type="number" min="0" value="3">
-        </label>
-        <button id="exp-preview" class="btn primary">Vorschau erstellen</button>
-        <button id="exp-txt" class="btn">Als .txt herunterladen</button>
-        <button id="exp-rtf" class="btn">Als .rtf herunterladen</button>
-      </div>
-      <textarea id="exp-out" class="field mono" rows="10" readonly placeholder="Vorschau (Nur-Text) …"></textarea>
     </section>
 
     <!-- Dokumente (lokal, verschlüsselt) -->
@@ -233,8 +100,11 @@
   </main>
 
   <script src="./scripts/tree.js"></script>
-  <script type="module" src="./scripts/ui-students.js"></script>
+
+  <!-- sql.js UMD: stellt window.initSqlJs bereit (wichtig) -->
+  <script src="./lib/sqljs/sql-wasm.js"></script>
+
+  <!-- UI-Andockpunkte (laden db.js/vault.js) -->
   <script type="module" src="./scripts/ui-docs.js"></script>
-  <script type="module" src="./scripts/export.js"></script>
 </body>
 </html>
