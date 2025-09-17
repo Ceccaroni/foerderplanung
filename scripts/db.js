@@ -1,6 +1,6 @@
-// /scripts/db.js  (Version 2025-09-17-01)
-// SQLite via sql.js (WASM). Ganze DB als verschlüsselter Blob in IndexedDB.
-// UI bleibt unberührt; Aufruf später aus App oder Konsole.
+// /scripts/db.js
+// SQLite via sql.js (WASM). Ganze DB als verschluesselter Blob in IndexedDB.
+// UI bleibt unberuehrt; Aufruf spaeter aus App oder Konsole.
 import { deriveKey, encryptBytes, decryptBytes, randomBytes } from './crypto.js';
 import { idbGet, idbSet } from './idb.js';
 
@@ -12,28 +12,62 @@ let salt = null;   // PBKDF2 salt (Uint8Array)
 const ID_SALT = 'kdf-salt';
 const ID_DB   = 'db-core';
 
-// Cachebust für Module (Pages-Caching umgehen)
-const SQL_WASM_URL = '../lib/sqljs/sql-wasm.js?v=20250917a';
+// Warten bis eine Bedingung stimmt (max. timeout ms)
+function waitFor(condFn, timeout = 1500, step = 50){
+  return new Promise((resolve, reject)=>{
+    const t0 = Date.now();
+    (function loop(){
+      try { if (condFn()) return resolve(true); } catch {}
+      if (Date.now() - t0 >= timeout) return reject(new Error('timeout'));
+      setTimeout(loop, step);
+    })();
+  });
+}
 
 export async function loadSqlJs() {
   if (SQL) return SQL;
 
-  // sql-wasm.js dynamisch laden; verschiedene Exportvarianten abfangen
-  const mod = await import(SQL_WASM_URL);
-
-  const init =
-    (typeof mod === 'function' && mod) ||
-    (typeof mod.default === 'function' && mod.default) ||
-    (typeof mod.initSqlJs === 'function' && mod.initSqlJs) ||
-    (mod.default && typeof mod.default.initSqlJs === 'function' && mod.default.initSqlJs);
-
-  if (!init) {
-    console.error('sql-wasm.js Export:', mod);
-    throw new Error('sql-wasm.js: keine Init-Funktion gefunden (Datei/Build prüfen).');
+  // 1) Bevorzugt: globale initSqlJs (wenn sql-wasm.js per <script> eingebunden ist)
+  if (typeof globalThis.initSqlJs === 'function') {
+    SQL = await globalThis.initSqlJs({ locateFile: f => `./lib/sqljs/${f}` });
+    return SQL;
   }
 
-  SQL = await init({ locateFile: f => `./lib/sqljs/${f}` });
-  return SQL;
+  // 2) Fallback: versuchen, das Skript dynamisch zu laden
+  // Hinweis: Auf manchen Builds liefert der Import ein WebAssembly.Module -> damit koennen wir nichts anfangen.
+  try {
+    const mod = await import('../lib/sqljs/sql-wasm.js');
+
+    const init =
+      (typeof mod === 'function' && mod) ||
+      (typeof mod.default === 'function' && mod.default) ||
+      (typeof mod.initSqlJs === 'function' && mod.initSqlJs) ||
+      (mod.default && typeof mod.default.initSqlJs === 'function' && mod.default.initSqlJs) ||
+      (typeof globalThis.initSqlJs === 'function' && globalThis.initSqlJs);
+
+    if (init) {
+      SQL = await init({ locateFile: f => `./lib/sqljs/${f}` });
+      return SQL;
+    }
+  } catch(e){
+    // Ignorieren, wir probieren noch den globalen Weg
+  }
+
+  // 3) Letzter Versuch: Warte kurz, ob das Skript global geworden ist (z. B. UMD)
+  try {
+    await waitFor(()=> typeof globalThis.initSqlJs === 'function', 1000);
+    SQL = await globalThis.initSqlJs({ locateFile: f => `./lib/sqljs/${f}` });
+    return SQL;
+  } catch {}
+
+  // 4) Saubere Fehlermeldung mit Hinweis zur richtigen Datei
+  throw new Error(
+    "sql-wasm.js konnte nicht initialisiert werden. " +
+    "Loesung: Lade die Originaldateien exakt so ins Repo: \n" +
+    "  lib/sqljs/sql-wasm.js  (enthaelt die Funktion initSqlJs)\n" +
+    "  lib/sqljs/sql-wasm.wasm\n" +
+    "Und binde sie in index.html ein: <script src=\"./lib/sqljs/sql-wasm.js\"></script>"
+  );
 }
 
 export async function openDatabase(passphrase) {
@@ -48,7 +82,7 @@ export async function openDatabase(passphrase) {
   salt = new Uint8Array(storedSalt);
   key = await deriveKey(passphrase, salt);
 
-  // Verschlüsselte DB laden
+  // Verschluesselte DB laden
   const packed = await idbGet(ID_DB);
   if (packed && packed.iv && packed.cipher) {
     const iv = new Uint8Array(packed.iv);
@@ -195,7 +229,7 @@ function bootstrapSchema(db){
   `);
 }
 
-// Beispiel-APIs (ohne UI)
+// Beispiel-APIs (ohne UI), damit wir spaeter direkt andocken koennen
 export function addStudent({id = crypto.randomUUID(), vorname, name, geburtstag = null, adresse = null, bemerkung = null}){
   const now = Date.now();
   const stmt = db.prepare('INSERT INTO student (id,vorname,name,geburtstag,adresse,bemerkung,created_at) VALUES (?,?,?,?,?,?,?)');
