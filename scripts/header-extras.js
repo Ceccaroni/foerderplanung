@@ -1,121 +1,72 @@
-// Lazy-Avatare ohne Passphrase-Dialog, solange keine DB existiert.
-// Öffnet Core/Vault nur, wenn bereits Daten vorhanden sind ODER bei Klick.
-
-import { idbGet } from './idb.js';
-
-let core = null;
-let vault = null;
-let selectedId = localStorage.getItem('fp.selectedStudent') || null;
-
-function initials(v, n){
-  const i1 = (v||'').trim()[0] || '';
-  const i2 = (n||'').trim()[0] || '';
-  const s = (i1 + i2).toUpperCase();
-  return s || '?';
-}
-function svgPlaceholder(text){
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='88' height='88'>
-    <rect width='100%' height='100%' rx='10' ry='10' fill='#eceff1'/>
-    <text x='50%' y='55%' text-anchor='middle' font-family='Arial' font-size='38' fill='#99a3ad'>${text}</text>
-  </svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-}
-
-async function coreExists(){
-  // Ohne Passphrase checken, ob es überhaupt einen gespeicherten Core-Blob gibt.
-  try { return !!(await idbGet('db-core')); } catch { return false; }
-}
-
-async function ensureCoreOpen(){
-  if (core) return true;
-  core = await import('./db.js');
-  if (!core.isOpen()){
-    const pass = window.fpCorePass || prompt('Passphrase (Core):');
-    if (!pass) return false;
-    window.fpCorePass = pass;
-    await core.openDatabase(pass);
-  }
-  return true;
-}
-async function ensureVaultOpen(){
-  if (vault) return true;
-  vault = await import('./vault.js');
-  if (!vault.isVaultOpen()){
-    const pass = window.fpVaultPass || window.fpCorePass || prompt('Passphrase (Vault):');
-    if (!pass) return false;
-    window.fpVaultPass = pass;
-    await vault.openVault(pass);
-  }
-  return true;
-}
-
-function renderAvatars(container, items){
-  container.innerHTML = '';
-  for (const it of items){
-    const btn = document.createElement('button');
-    btn.className = 'fp-avatar';
-    btn.title = `${it.vorname||''} ${it.name||''}`.trim();
-    btn.dataset.sid = it.id;
-    const img = document.createElement('img');
-    img.alt = btn.title || 'Schülerbild';
-    img.src = it.src;
-    btn.appendChild(img);
-    if (selectedId && it.id === selectedId) btn.classList.add('is-active');
-
-    btn.addEventListener('click', async () => {
-      selectedId = it.id;
-      localStorage.setItem('fp.selectedStudent', selectedId);
-      container.querySelectorAll('.fp-avatar').forEach(b => b.classList.remove('is-active'));
-      btn.classList.add('is-active');
-
-      // Erst bei Interaktion DB öffnen (wenn vorhanden)
-      if (await coreExists()){
-        const ok = await ensureCoreOpen(); if (!ok) return;
-      }
-      const target = document.querySelector('#stammdaten-h');
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      document.dispatchEvent(new CustomEvent('fp:student-selected', { detail: { id: selectedId }}));
-    });
-
-    container.appendChild(btn);
-  }
-}
-
-async function init(){
-  const wrap = document.querySelector('.fp-avatars');
-  if (!wrap) return;
-
-  // Start: Nur Platzhalter (keine Passphrase)
-  const placeholders = [
-    { id: 's1', vorname: 'S', name: '', src: svgPlaceholder('S') },
-    { id: 's2', vorname: 'D', name: '', src: svgPlaceholder('D') },
-    { id: 's3', vorname: 'F', name: '', src: svgPlaceholder('F') },
+// Tabs aktiv halten + Smooth-Scroll + Avatar-State
+(function(){
+  const tabs = Array.from(document.querySelectorAll('.fp-tab'));
+  const avatars = Array.from(document.querySelectorAll('.fp-avatar'));
+  const sections = [
+    { id:'#stammdaten-h', tab: tabs[0], av: avatars[0] },
+    { id:'#docs-h',       tab: tabs[1], av: avatars[1] },
+    { id:'#zielbaum-h',   tab: tabs[3], av: avatars[2] },
   ];
-  renderAvatars(wrap, placeholders);
+  const foto = document.querySelector('#foto-h');
+  if (foto) sections.splice(2,0,{ id:'#foto-h', tab: tabs[2], av: null });
 
-  // Wenn bereits Core-DB existiert, Avatare leise ersetzen (ohne Prompt),
-  // indem wir erst bei Bedarf öffnen.
-  if (!(await coreExists())) return;
+  function setActive(id){
+    tabs.forEach(t => t.removeAttribute('aria-current'));
+    avatars.forEach(a => a?.classList.remove('is-active'));
+    const s = sections.find(x => x.id === id);
+    if (!s) return;
+    s.tab.setAttribute('aria-current','page');
+    if (s.av) s.av.classList.add('is-active');
+  }
 
-  // Nutzerinteraktion abwarten, dann echte Daten (optional)
-  // Tipp: Avatar anklicken → dann ensureCoreOpen() in Handler.
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-  // Tabs: sanftes Scrollen + aktiver Reiter
-  const tabs = document.querySelectorAll('.fp-tabs .fp-tab');
-  function selectTab(a){ tabs.forEach(t => t.removeAttribute('aria-current')); a.setAttribute('aria-current', 'page'); }
-  tabs.forEach(a => {
-    a.addEventListener('click', e => {
-      const id = a.getAttribute('href');
-      if (id && id.startsWith('#')){
-        e.preventDefault();
-        const el = document.querySelector(id);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        selectTab(a);
-      }
+  // Click: Tabs
+  tabs.forEach(t => {
+    t.addEventListener('click', (e) => {
+      const href = t.getAttribute('href');
+      const target = document.querySelector(href);
+      if (!target) return;
+      e.preventDefault();
+      setActive(href);
+      target.scrollIntoView({ behavior:'smooth', block:'start' });
+      history.replaceState(null,'',href);
     });
   });
 
-  init().catch(console.error);
-});
+  // Click: Avatare (data-goto="#…")
+  avatars.forEach(a => {
+    const to = a.getAttribute('data-goto');
+    if (!to) return;
+    a.addEventListener('click', () => {
+      const target = document.querySelector(to);
+      if (!target) return;
+      setActive(to);
+      target.scrollIntoView({ behavior:'smooth', block:'start' });
+      history.replaceState(null,'',to);
+    });
+  });
+
+  // Scroll: aktives Register automatisch setzen
+  const io = new IntersectionObserver((entries) => {
+    // am stärksten sichtbarer Abschnitt gewinnt
+    let best = null, bestRatio = 0;
+    for (const e of entries){
+      if (e.isIntersecting && e.intersectionRatio > bestRatio){
+        bestRatio = e.intersectionRatio;
+        best = e.target;
+      }
+    }
+    if (!best) return;
+    const id = '#'+best.id;
+    const hit = sections.find(s => s.id === id);
+    if (hit) setActive(id);
+  }, { rootMargin: '-40% 0px -50% 0px', threshold: [0, .25, .5, .75, 1] });
+
+  sections.forEach(s => {
+    const h = document.querySelector(s.id);
+    if (h) io.observe(h);
+  });
+
+  // initial anhand der URL
+  const fromHash = sections.find(s => s.id === location.hash);
+  setActive(fromHash ? fromHash.id : sections[0].id);
+})();
