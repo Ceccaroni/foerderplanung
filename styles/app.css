@@ -3,9 +3,9 @@
 html, body { height: 100%; }
 :root{
   --header-height: 64px;
-  --tabs-height: 48px;          /* kleiner */
+  --tabs-height: 48px;          /* kompakt */
   --tab-min: 140px;             /* min. Breite je Reiter */
-  --tab-active: #D9A066;        /* Wunschfarbe aktiv */
+  --tab-active: #D9A066;        /* aktive Registerfarbe */
   --tab-active-ink: #fff;
   --baseline: 1px solid var(--border);
 }
@@ -122,11 +122,11 @@ textarea.field { width: 100%; }
 .fp-avatar img{ filter: grayscale(100%); opacity: .55; transition: opacity .15s ease, filter .15s ease; }
 .fp-avatar.is-active img{ filter: none; opacity: 1; }
 
-/* Register: kleinere Reiter, bündig auf Grundlinie, eleganter Schatten */
+/* Register: kompakt, bündig auf Grundlinie, feiner Schatten */
 .fp-tabs{
   display: grid; grid-template-columns: repeat(4, minmax(var(--tab-min), 1fr));
   gap: 6px; align-self: stretch;
-  border-bottom: var(--baseline);             /* Grundlinie */
+  border-bottom: var(--baseline);          /* Grundlinie */
   padding: 0 var(--space-2);
 }
 .fp-tab{
@@ -135,14 +135,14 @@ textarea.field { width: 100%; }
   border: 1px solid var(--border); border-bottom: none; /* unten offen = Reiter */
   border-top-left-radius: 12px; border-top-right-radius: 12px;
   background: #fff;
-  box-shadow: 0 1px 2px rgba(0,0,0,.06);      /* zarter Schatten */
-  margin-bottom: -1px;                        /* bündig auf Grundlinie */
-  position: relative; top: 1px;               /* saubere Kante */
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);   /* zarter Schatten */
+  margin-bottom: -1px;                     /* bündig auf Grundlinie */
+  position: relative; top: 1px;            /* Subpixel-Korrektur (Safari) */
 }
 .fp-tab[aria-current="page"]{
   background: var(--tab-active); color: var(--tab-active-ink);
   border-color: var(--tab-active);
-  box-shadow: 0 4px 12px rgba(0,0,0,.14);     /* eleganter Schatten aktiv */
+  box-shadow: 0 4px 12px rgba(0,0,0,.14);  /* eleganter Schatten aktiv */
 }
 
 /* Fixes Logo unten rechts */
