@@ -7,28 +7,148 @@
   <!-- CSP: WASM für sql.js erlaubt, sonst alles strikt lokal -->
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'">
-  <title>Förderplanung – Zielbaum (lokal)</title>
+  <title>Förderplanung – lokal</title>
   <link rel="stylesheet" href="./styles/tokens.css">
   <link rel="stylesheet" href="./styles/app.css">
 </head>
 <body>
+
+  <!-- Header: Avatare + Tabs (Logo ist fix unten rechts, siehe .brand-fixed) -->
   <header class="app-header" role="banner">
-    <img class="brand" src="./assets/logo-huttwil.svg" alt="Schule Huttwil">
-    <h1 class="app-title">Förderplanung</h1>
+    <div class="header-row">
+      <div class="avatars" aria-label="Schnellzugriff">
+        <button class="avatar avatar--shadow-top" title="Stammdaten" data-goto="#stammdaten-h">
+          <img src="./assets/avatar-1.png" alt="Stammdaten">
+        </button>
+        <button class="avatar avatar--shadow-top" title="Dokumente" data-goto="#docs-h">
+          <img src="./assets/avatar-2.png" alt="Dokumente">
+        </button>
+        <button class="avatar avatar--shadow-top" title="Förderplanung" data-goto="#zielbaum-h">
+          <img src="./assets/avatar-3.png" alt="Förderplanung">
+        </button>
+      </div>
+
+      <nav class="tabs" role="navigation" aria-label="Bereiche">
+        <a class="tab" href="#stammdaten-h" aria-current="page">Stammdaten</a>
+        <a class="tab" href="#docs-h">Dokumente</a>
+        <a class="tab" href="#foto-h">Foto</a>
+        <a class="tab" href="#zielbaum-h">Förderplanung</a>
+      </nav>
+    </div>
   </header>
 
   <main class="container" role="main">
+
+    <!-- Stammdaten -->
+    <section aria-labelledby="stammdaten-h">
+      <h2 id="stammdaten-h">Stammdaten</h2>
+
+      <div class="form-row">
+        <label>Vorname
+          <input id="st-vorname" class="field" autocomplete="off">
+        </label>
+        <label>Name
+          <input id="st-name" class="field" autocomplete="off">
+        </label>
+        <label>Geburtstag
+          <input id="st-geb" type="date" class="field">
+        </label>
+      </div>
+
+      <div class="form-row">
+        <label>Adresse
+          <input id="st-adresse" class="field" autocomplete="off" size="50">
+        </label>
+      </div>
+
+      <div class="form-row">
+        <label>Bemerkung
+          <input id="st-bem" class="field" autocomplete="off" size="60">
+        </label>
+      </div>
+
+      <div class="form-row" aria-label="Status">
+        <span class="muted">Status</span>
+        <label><input type="checkbox" id="st-flag-none"> kein</label>
+        <label><input type="checkbox" id="st-flag-rilz"> rILZ</label>
+        <label><input type="checkbox" id="st-flag-eu"> eU</label>
+        <label><input type="checkbox" id="st-flag-bvsa"> bVSA</label>
+        <label>rILZ Fächer
+          <input id="st-rilz-faecher" class="field" placeholder="z. B. Deutsch, Mathematik">
+        </label>
+      </div>
+
+      <div class="form-row">
+        <span class="muted">Eltern/Erziehungsberechtigte</span>
+      </div>
+      <div class="form-row">
+        <label>Kontakt 1 – Name
+          <input id="st-k1-name" class="field">
+        </label>
+        <label>Telefon
+          <input id="st-k1-tel" class="field">
+        </label>
+        <label>E-Mail
+          <input id="st-k1-mail" class="field">
+        </label>
+        <label>Adresse
+          <input id="st-k1-adr" class="field" size="40">
+        </label>
+      </div>
+      <div class="form-row">
+        <label>Kontakt 2 – Name
+          <input id="st-k2-name" class="field">
+        </label>
+        <label>Telefon
+          <input id="st-k2-tel" class="field">
+        </label>
+        <label>E-Mail
+          <input id="st-k2-mail" class="field">
+        </label>
+        <label>Adresse
+          <input id="st-k2-adr" class="field" size="40">
+        </label>
+      </div>
+
+      <div class="form-row">
+        <span class="muted">Schulhistorie (optional, 1 Eintrag)</span>
+      </div>
+      <div class="form-row">
+        <label>Titel
+          <input id="st-hist-titel" class="field" placeholder="z. B. Abklärung Logopädie">
+        </label>
+        <label>Von
+          <input id="st-hist-von" type="date" class="field">
+        </label>
+        <label>Bis
+          <input id="st-hist-bis" type="date" class="field">
+        </label>
+        <label>Beschreibung
+          <input id="st-hist-beschr" class="field" size="40">
+        </label>
+      </div>
+
+      <div class="form-row">
+        <button id="st-save" class="btn primary">Speichern</button>
+        <button id="st-refresh" class="btn">Liste aktualisieren</button>
+        <span id="st-msg" class="muted"></span>
+      </div>
+
+      <ul id="st-list" class="list"></ul>
+    </section>
+
+    <hr>
+
+    <!-- Zielbaum (Demo) -->
     <section aria-labelledby="zielbaum-h">
       <h2 id="zielbaum-h">Zielbaum</h2>
 
-      <!-- ARIA-Tree: Ziele → Teilziele → (Platzhalter für Beobachtungen) -->
       <div id="ziel-tree"
            role="tree"
            aria-label="Zielbaum"
            aria-describedby="tree-hinweis"
            tabindex="0">
 
-        <!-- Beispiel-Knoten Ebene 1 -->
         <div role="treeitem" aria-expanded="true" aria-level="1" aria-setsize="2" aria-posinset="1" tabindex="0">
           <button class="twisty" aria-hidden="true" tabindex="-1" title="Auf-/Zuklappen">▾</button>
           <span class="tree-text">Mathematik — Terme ausmultiplizieren (aktiv)</span>
@@ -52,7 +172,6 @@
           </div>
         </div>
 
-        <!-- Beispiel-Knoten Ebene 1 -->
         <div role="treeitem" aria-expanded="false" aria-level="1" aria-setsize="2" aria-posinset="2" tabindex="-1">
           <button class="twisty" aria-hidden="true" tabindex="-1" title="Auf-/Zuklappen">▸</button>
           <span class="tree-text">Deutsch — Wortstamm erkennen (entwurf)</span>
@@ -115,13 +234,43 @@
     </section>
   </main>
 
+  <!-- Fixes Logo unten rechts, immer sichtbar -->
+  <div class="brand-fixed" aria-hidden="true">
+    <img src="./assets/logo-huttwil.svg" alt="" role="presentation">
+  </div>
+
   <script src="./scripts/tree.js"></script>
 
-  <!-- sql.js UMD: stellt window.initSqlJs bereit (wichtig) -->
+  <!-- sql.js UMD für die DB -->
   <script src="./lib/sqljs/sql-wasm.js"></script>
 
-  <!-- UI-Andockpunkte (laden db.js/vault.js) -->
+  <!-- UI-Module -->
+  <script type="module" src="./scripts/ui-students.js"></script>
   <script type="module" src="./scripts/ui-docs.js"></script>
   <script type="module" src="./scripts/export.js"></script>
+
+  <script>
+    // Tabs & Avatar-Scroll, minimal und ohne Framework
+    (function(){
+      const tabs = document.querySelectorAll('.tabs .tab');
+      tabs.forEach(a => a.addEventListener('click', e => {
+        const id = a.getAttribute('href');
+        const el = document.querySelector(id);
+        if (el) {
+          e.preventDefault();
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          tabs.forEach(t => t.removeAttribute('aria-current'));
+          a.setAttribute('aria-current','page');
+        }
+      }));
+      document.querySelectorAll('.avatar[data-goto]').forEach(btn=>{
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-goto');
+          const el = document.querySelector(id);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
