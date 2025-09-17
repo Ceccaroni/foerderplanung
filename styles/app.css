@@ -15,44 +15,16 @@ body {
   overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
 
-/* Header – kompakt */
+/* Header */
 .app-header {
-  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: var(--space-4) var(--space-6); border-bottom: 1px solid var(--border);
   background: var(--bg);
-  padding: var(--space-3) var(--space-6) var(--space-2);
 }
-.header-row {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: var(--space-6);
-}
+.app-title { font-size: var(--fs-600); margin: 0; }
 
-/* Avatare: quadratisch mit Radius; Schatten-Variante wählbar */
-.avatars { display: flex; gap: var(--space-3); }
-.avatar {
-  --avatar-size: 44px;
-  width: var(--avatar-size); height: var(--avatar-size);
-  border-radius: 10px;
-  padding: 0; border: 0; background: transparent; cursor: pointer;
-  overflow: hidden; display: inline-flex; align-items: center; justify-content: center;
-}
-.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.avatar--shadow-top    { box-shadow: 0 -4px 8px rgba(0,0,0,.12); }
-.avatar--shadow-bottom { box-shadow: 0  4px 10px rgba(0,0,0,.14); }
-
-/* Tabs */
-.tabs { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-.tab {
-  display: inline-block;
-  padding: 6px 10px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: #fff;
-  text-decoration: none; color: inherit;
-  box-shadow: var(--shadow-1);
-}
-.tab[aria-current="page"] {
-  background: var(--accent); color: var(--accent-ink); border-color: transparent;
-}
+/* Strikte Trennung: Logo-Grössen nur hier, nicht im HTML */
+.brand { width: 160px; height: 40px; display: block; }
 
 /* Layout */
 .container { max-width: 1100px; margin: 0 auto; padding: var(--space-6) var(--space-4); }
@@ -89,7 +61,7 @@ h2 { font-size: var(--fs-300); margin: 0 0 var(--space-3) 0; }
 
 .tree-text{ flex: 1; }
 
-/* Formulare & Aktionen */
+/* Formulare & Aktionen – neutral, für spätere UI bereits bereit */
 .form-row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: end; margin-bottom: var(--space-4); }
 .field { font: inherit; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
 .btn {
@@ -106,25 +78,15 @@ h2 { font-size: var(--fs-300); margin: 0 0 var(--space-3) 0; }
 .muted { color: var(--muted); font-size: .95em; }
 .row-actions { display: flex; gap: 8px; margin-top: 6px; }
 
-/* Fixes Logo unten rechts, immer sichtbar */
-.brand-fixed {
-  position: fixed;
-  right: max(16px, env(safe-area-inset-right));
-  bottom: max(16px, env(safe-area-inset-bottom));
-  z-index: 10;
-}
-.brand-fixed img {
-  height: 40px; width: auto; display: block;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.15));
-  opacity: .98;
-}
-@media (max-width: 480px){
-  .brand-fixed img { height: 28px; }
-}
-/* Beim Drucken nicht mitnehmen */
-@media print{
-  .brand-fixed { display: none; }
-}
+/* Utilities */
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+textarea.field { width: 100%; }
+
+/* Hidden normalisieren (robust über Browser hinweg) */
+[hidden] { display: none !important; }
+
+/* Foto-Vorschau */
+#foto-preview { max-width: 160px; height: auto; display: block; }
 
 /* Bewegungen reduzieren */
 @media (prefers-reduced-motion: reduce){
