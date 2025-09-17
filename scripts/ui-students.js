@@ -1,64 +1,83 @@
-// Lazy: Core-DB erst öffnen, wenn wirklich nötig (kein Prompt beim Laden)
+// Öffnet die Core-DB erst bei Bedarf (kein Prompt auf Page-Load)
+import * as core from './db.js';
 
-let core = null;
 let isOpen = false;
-
-async function ensureCoreOpen() {
-  if (isOpen) return true;
-  if (!core) core = await import('./db.js');
-  if (core.isOpen()) { isOpen = true; return true; }
-  const pass = window.fpCorePass || prompt('Passphrase (Core):');
+async function ensureOpen(){
+  if (isOpen && core.isOpen()) return true;
+  const pass = prompt('Passphrase (Core):');
   if (!pass) return false;
-  window.fpCorePass = pass;
   await core.openDatabase(pass);
   isOpen = true;
   return true;
 }
 
-function read(fieldId){ const el = document.getElementById(fieldId); return el ? el.value.trim() : ''; }
+/* DOM-Refs */
+const $ = (s) => document.querySelector(s);
+const listEl = $('#st-list');
+const msgEl  = $('#st-msg');
 
-async function saveStudent(){
-  const ok = await ensureCoreOpen(); if (!ok) return;
-  const data = {
-    vorname:    read('st-vorname'),
-    name:       read('st-name'),
-    geburtstag: read('st-geb') || null,
-    adresse:    read('st-adresse') || null,
-    bemerkung:  read('st-bem') || null,
+function readStudentForm(){
+  return {
+    vorname:  $('#st-vorname').value.trim(),
+    name:     $('#st-name').value.trim(),
+    geb:      $('#st-geb').value || null,
+    adresse:  $('#st-adresse').value.trim() || null,
+    bemerkung:$('#st-bem').value.trim() || null,
   };
-  if (!data.vorname || !data.name){
-    document.getElementById('st-msg').textContent = 'Vorname und Name sind Pflicht.';
+}
+
+function renderList(items){
+  listEl.innerHTML = '';
+  if (!items.length){
+    const li = document.createElement('li');
+    li.className = 'muted';
+    li.textContent = 'Keine Einträge.';
+    listEl.appendChild(li);
     return;
   }
-  const id = core.addStudent(data);
-  await core.persist();
-  document.getElementById('st-msg').textContent = `Gespeichert (ID ${id.slice(0,8)}…).`;
-  await refreshList();
-}
-
-async function refreshList(){
-  const ok = await ensureCoreOpen(); if (!ok) return;
-  const ul = document.getElementById('st-list');
-  const dl = document.getElementById('exp-students');
-  ul.innerHTML = ''; if (dl) dl.innerHTML = '';
-  const arr = core.listStudents();
-  for (const s of arr){
+  for (const s of items){
     const li = document.createElement('li');
-    li.textContent = `${s.name}, ${s.vorname} — ${s.geburtstag || 'ohne Datum'}`;
-    ul.appendChild(li);
-    if (dl){
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.label = `${s.name}, ${s.vorname}`;
-      dl.appendChild(opt);
-    }
+    li.innerHTML = `<span class="mono">${s.id}</span> — ${s.name} ${s.vorname}${s.geburtstag ? ' · '+s.geburtstag : ''}`;
+    listEl.appendChild(li);
   }
-  document.getElementById('st-msg').textContent = `${arr.length} Einträge.`;
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  const bSave = document.getElementById('st-save');
-  const bList = document.getElementById('st-refresh');
-  if (bSave) bSave.addEventListener('click', e => { e.preventDefault(); saveStudent().catch(console.error); });
-  if (bList) bList.addEventListener('click', e => { e.preventDefault(); refreshList().catch(console.error); });
+/* Aktionen */
+$('#st-save')?.addEventListener('click', async () => {
+  if (!await ensureOpen()) return;
+  const f = readStudentForm();
+  if (!f.vorname || !f.name){
+    msgEl.textContent = 'Vorname und Name sind Pflicht.';
+    return;
+  }
+  const id = core.addStudent({
+    vorname: f.vorname,
+    name: f.name,
+    geburtstag: f.geb,
+    adresse: f.adresse,
+    bemerkung: f.bemerkung
+  });
+  await core.persist();
+  msgEl.textContent = 'Gespeichert. ID: '+id;
+});
+
+$('#st-refresh')?.addEventListener('click', async () => {
+  if (!await ensureOpen()) return;
+  const items = core.listStudents();
+  renderList(items);
+});
+
+/* Export-Liste (nur die Liste der IDs/Namen für das datalist) */
+$('#exp-load-students')?.addEventListener('click', async () => {
+  if (!await ensureOpen()) return;
+  const items = core.listStudents();
+  const dl = document.querySelector('#exp-students');
+  dl.innerHTML = '';
+  for (const s of items){
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.label = `${s.name} ${s.vorname}`+(s.geburtstag ? ` · ${s.geburtstag}`:'');
+    dl.appendChild(opt);
+  }
+  msgEl.textContent = `Liste geladen (${items.length}).`;
 });
