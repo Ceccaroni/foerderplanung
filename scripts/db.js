@@ -1,3 +1,4 @@
+// /scripts/db.js
 // SQLite via sql.js (WASM). Ganze DB als verschlüsselter Blob in IndexedDB.
 // UI bleibt unberührt; Aufruf später aus App oder Konsole.
 import { deriveKey, encryptBytes, decryptBytes, randomBytes } from './crypto.js';
@@ -13,10 +14,21 @@ const ID_DB   = 'db-core';   // wir starten mit einer Core-DB; Vault kommt spät
 
 export async function loadSqlJs() {
   if (SQL) return SQL;
-  // sql-wasm.js muss über <script> eingebunden sein ODER dynamisch importiert werden.
-  // Für „hart schlank“ nutzen wir dynamic import:
+  // sql-wasm.js dynamisch laden; verschiedene Exportvarianten abfangen
   const mod = await import('../lib/sqljs/sql-wasm.js');
-  SQL = await mod.default({ locateFile: f => `./lib/sqljs/${f}` });
+
+  const init =
+    (typeof mod === 'function' && mod) ||
+    (typeof mod.default === 'function' && mod.default) ||
+    (typeof mod.initSqlJs === 'function' && mod.initSqlJs) ||
+    (mod.default && typeof mod.default.initSqlJs === 'function' && mod.default.initSqlJs);
+
+  if (!init) {
+    console.error('sql-wasm.js Export:', mod);
+    throw new Error('sql-wasm.js: keine Init-Funktion gefunden (Datei/Build prüfen).');
+  }
+
+  SQL = await init({ locateFile: f => `./lib/sqljs/${f}` });
   return SQL;
 }
 
